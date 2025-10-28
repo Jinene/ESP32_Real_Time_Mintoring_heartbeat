@@ -1,71 +1,41 @@
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <Adafruit_SSD1306.h>
-#include <MAX30105.h>
+ESP32_Real_Time_Monitoring_Heartbeat
 
-// Wi-Fi credentials
-const char* ssid = "YourSSID";
-const char* password = "YourPassword";
+ESP32 Real-Time Heartbeat Monitoring System is an IoT project that reads heartbeat data from a sensor (like MAX30102 or Pulse Sensor), displays it on an LCD/OLED screen, and publishes it via MQTT for real-time visualization on a Node-RED dashboard.
 
-// MQTT Broker
-const char* mqttServer = "broker.hivemq.com"; 
-int mqttPort = 1883;
-const char* topic = "esp32/heartbeat";
+Features:
 
-// Sensor and display initialization
-MAX30105 heartSensor;
-Adafruit_SSD1306 display(128, 64, &Wire);
+Real-time heartbeat monitoring
 
-WiFiClient espClient;
-PubSubClient client(espClient);
+Display on OLED or LCD
 
-void setup() {
-  Serial.begin(115200);
-  
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("WiFi connected");
+MQTT-based data transmission
 
-  // MQTT setup
-  client.setServer(mqttServer, mqttPort);
+Visualization on Node-RED dashboard
 
-  // Initialize sensor
-  heartSensor.begin();
-  
-  // Initialize OLED
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  display.clearDisplay();
-}
+Optional alerts for abnormal heart rate
 
-void loop() {
-  // Read heart rate
-  long heartRate = heartSensor.getHeartRate(); 
+Hardware Required:
 
-  // Display on OLED
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.print("Heart Rate: ");
-  display.println(heartRate);
-  display.display();
+ESP32 development board
 
-  // Publish to MQTT
-  if (!client.connected()) reconnectMQTT();
-  client.loop();
-  client.publish(topic, String(heartRate).c_str());
+Heartbeat/Pulse sensor
 
-  delay(1000);
-}
+OLED or LCD display
 
-void reconnectMQTT() {
-  while (!client.connected()) {
-    if (client.connect("ESP32Client")) {
-      client.subscribe(topic);
-    } else {
-      delay(5000);
-    }
-  }
-}
+Wi-Fi network
+
+Software Required:
+
+Arduino IDE
+
+Node-RED
+
+MQTT broker (local or cloud)
+
+Use Cases:
+
+Personal health monitoring
+
+IoT-based real-time health dashboards
+
+Educational projects on ESP32, sensors, and MQTT
