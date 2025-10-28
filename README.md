@@ -1,31 +1,71 @@
-1. Hardware Components
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <Adafruit_SSD1306.h>
+#include <MAX30105.h>
 
-ESP32 board (any standard dev kit)
+// Wi-Fi credentials
+const char* ssid = "YourSSID";
+const char* password = "YourPassword";
 
-Pulse/heartbeat sensor (e.g., MAX30102, Pulse Sensor)
+// MQTT Broker
+const char* mqttServer = "broker.hivemq.com"; 
+int mqttPort = 1883;
+const char* topic = "esp32/heartbeat";
 
-OLED/LCD display (e.g., 0.96" I2C OLED or 16x2 LCD)
+// Sensor and display initialization
+MAX30105 heartSensor;
+Adafruit_SSD1306 display(128, 64, &Wire);
 
-Wi-Fi router (for MQTT and Node-RED connectivity)
+WiFiClient espClient;
+PubSubClient client(espClient);
 
-Optional: buzzer or LED for alerts
+void setup() {
+  Serial.begin(115200);
+  
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected");
 
-2. Software/Platforms
+  // MQTT setup
+  client.setServer(mqttServer, mqttPort);
 
-Arduino IDE (or PlatformIO)
+  // Initialize sensor
+  heartSensor.begin();
+  
+  // Initialize OLED
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+}
 
-MQTT Broker (e.g., Mosquitto, or use cloud broker like HiveMQ)
+void loop() {
+  // Read heart rate
+  long heartRate = heartSensor.getHeartRate(); 
 
-Node-RED (dashboard for visualization)
+  // Display on OLED
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Heart Rate: ");
+  display.println(heartRate);
+  display.display();
 
-Libraries:
+  // Publish to MQTT
+  if (!client.connected()) reconnectMQTT();
+  client.loop();
+  client.publish(topic, String(heartRate).c_str());
 
-WiFi.h – ESP32 Wi-Fi connection
+  delay(1000);
+}
 
-PubSubClient.h – MQTT
-
-Adafruit_GFX.h & Adafruit_SSD1306.h – for OLED
-
-MAX30105.h – for MAX30102 sensor
-
-LiquidCrystal_I2C.h – for LCD
+void reconnectMQTT() {
+  while (!client.connected()) {
+    if (client.connect("ESP32Client")) {
+      client.subscribe(topic);
+    } else {
+      delay(5000);
+    }
+  }
+}
