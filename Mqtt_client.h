@@ -1,4 +1,3 @@
-// mqtt_client.h
 #ifndef MQTT_CLIENT_H
 #define MQTT_CLIENT_H
 
@@ -13,3 +12,5 @@ void reconnectMQTT();
 void publishHeartbeat(long heartRate);
 
 #endif
+// mqtt_client.h
+// mqtt_client.h
