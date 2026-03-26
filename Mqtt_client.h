@@ -12,5 +12,4 @@ void reconnectMQTT();
 void publishHeartbeat(long heartRate);
 
 #endif
-// mqtt_client.h
-// mqtt_client.h
+
